@@ -11,13 +11,33 @@
 
 #     return embeddings
 
+
+
+
+# from langchain_huggingface import HuggingFaceEmbeddings
+
+
+# def create_embeddings():
+
+#     embeddings = HuggingFaceEmbeddings(
+#         model_name="sentence-transformers/all-MiniLM-L6-v2"
+#     )
+
+#     return embeddings
+
+
 from langchain_huggingface import HuggingFaceEmbeddings
 
 
+_embeddings = None
+
+
 def create_embeddings():
+    global _embeddings
 
-    embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
-    )
+    if _embeddings is None:
+        _embeddings = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2"
+        )
 
-    return embeddings
+    return _embeddings
