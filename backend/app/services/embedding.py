@@ -26,18 +26,33 @@
 #     return embeddings
 
 
-from langchain_huggingface import HuggingFaceEmbeddings
+
+import os
+from fastembed import TextEmbedding
+from langchain_core.embeddings import Embeddings
 
 
-_embeddings = None
+class FastEmbed(Embeddings):
 
-
-def create_embeddings():
-    global _embeddings
-
-    if _embeddings is None:
-        _embeddings = HuggingFaceEmbeddings(
+    def __init__(self):
+        self.model = TextEmbedding(
             model_name="sentence-transformers/all-MiniLM-L6-v2"
         )
 
-    return _embeddings
+    def embed_documents(self, texts):
+
+        return list(
+            self.model.embed(texts)
+        )
+
+    def embed_query(self, text):
+
+        return list(
+            self.model.embed([text])
+        )[0]
+
+
+def create_embeddings():
+
+    return FastEmbed()
+
