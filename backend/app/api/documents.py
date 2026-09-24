@@ -334,9 +334,9 @@
 
 
 
+from pathlib import Path
 
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
-from pathlib import Path
 
 from backend.app.services.ingestion import load_document
 from backend.app.services.chunking import split_documents
@@ -360,17 +360,12 @@ vector_store = None
 
 
 def get_vector_store():
+
     global vector_store
 
     if vector_store is None:
-        print("CREATING VECTOR STORE...")
         embeddings = create_embeddings()
-
-        vector_store = load_vector_store(
-            embeddings
-        )
-
-        print("VECTOR STORE READY")
+        vector_store = load_vector_store(embeddings)
 
     return vector_store
 
@@ -380,7 +375,6 @@ async def upload_document(
     company_id: str = Form(...),
     file: UploadFile = File(...)
 ):
-    print("UPLOAD START")
 
     company_id = company_id.strip()
 
@@ -404,8 +398,6 @@ async def upload_document(
 
     file_content = await file.read()
 
-    print(f"FILE READ: {len(file_content)} bytes")
-
     if len(file_content) > MAX_FILE_SIZE:
         raise HTTPException(
             status_code=413,
@@ -415,22 +407,13 @@ async def upload_document(
     file_path = UPLOAD_DIR / file.filename
 
     try:
+
         with open(file_path, "wb") as buffer:
             buffer.write(file_content)
 
-        print("FILE SAVED")
+        documents = load_document(str(file_path))
 
-        documents = load_document(
-            str(file_path)
-        )
-
-        print(f"PDF LOADED: {len(documents)} pages")
-
-        chunks = split_documents(
-            documents
-        )
-
-        print(f"CHUNKS CREATED: {len(chunks)}")
+        chunks = split_documents(documents)
 
         if not chunks:
             raise HTTPException(
@@ -438,11 +421,7 @@ async def upload_document(
                 detail="No text could be extracted from the PDF"
             )
 
-        print("GETTING VECTOR STORE...")
-
         vector_store = get_vector_store()
-
-        print("STARTING INDEXING...")
 
         add_documents(
             vector_store,
@@ -450,22 +429,22 @@ async def upload_document(
             company_id
         )
 
-        print("INDEXING COMPLETE")
-
     except HTTPException:
+
         if file_path.exists():
             file_path.unlink()
+
         raise
 
     except Exception:
+
         if file_path.exists():
             file_path.unlink()
+
         raise HTTPException(
             status_code=500,
-            detail="DOCUMENT PROCESSING FAILED"
+            detail="Document processing failed"
         )
-
-    print("UPLOAD COMPLETE")
 
     return {
         "message": "Document uploaded and indexed successfully",
@@ -473,4 +452,3 @@ async def upload_document(
         "company_id": company_id,
         "chunks": len(chunks)
     }
-

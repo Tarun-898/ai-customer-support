@@ -4,6 +4,7 @@ __pycache__/
 *.pyc
 
 chroma_db/
+data/documents/
 
 .vscode/
 .idea/
