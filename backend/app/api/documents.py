@@ -460,12 +460,9 @@ async def upload_document(
     except Exception:
         if file_path.exists():
             file_path.unlink()
-
-        print("DOCUMENT PROCESSING FAILED")
-
         raise HTTPException(
             status_code=500,
-            detail="Document processing failed"
+            detail="DOCUMENT PROCESSING FAILED"
         )
 
     print("UPLOAD COMPLETE")

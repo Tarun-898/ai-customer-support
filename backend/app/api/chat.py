@@ -255,9 +255,19 @@ def chat(request: ChatRequest):
             "answer": answer
         }
 
+    # except Exception:
+
+    #     raise HTTPException(
+    #         status_code=500,
+    #         detail="Unable to process your request right now"
+    #     )
+
+  
     except Exception:
 
         raise HTTPException(
             status_code=500,
             detail="Unable to process your request right now"
         )
+
+
