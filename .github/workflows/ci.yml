@@ -28,3 +28,6 @@ jobs:
 
       - name: Push Docker image
         run: docker push tarun5511/ai-customer-support:latest
+
+      - name: Deploy to Render
+        run: curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
