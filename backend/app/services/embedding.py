@@ -26,30 +26,66 @@
 #     return embeddings
 
 
-
 import os
-from fastembed import TextEmbedding
+import requests
+
+from dotenv import load_dotenv
 from langchain_core.embeddings import Embeddings
 
+load_dotenv()
 
-class FastEmbed(Embeddings):
+
+class JinaEmbeddings(Embeddings):
 
     def __init__(self):
-        self.model = TextEmbedding(
-            model_name="BAAI/bge-small-en-v1.5"
-        )
+        self.api_key = os.getenv("JINA_API_KEY")
+        self.url = "https://api.jina.ai/v1/embeddings"
+        self.model = "jina-embeddings-v3"
 
     def embed_documents(self, texts):
-        return list(
-            self.model.embed(texts)
+
+        response = requests.post(
+            self.url,
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": self.model,
+                "input": texts
+            }
         )
 
+        response.raise_for_status()
+
+        result = response.json()
+
+        return [
+            item["embedding"]
+            for item in result["data"]
+        ]
+
     def embed_query(self, text):
-        return list(
-            self.model.embed([text])
-        )[0]
+
+        response = requests.post(
+            self.url,
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": self.model,
+                "input": [text]
+            }
+        )
+
+        response.raise_for_status()
+
+        result = response.json()
+
+        return result["data"][0]["embedding"]
 
 
 def create_embeddings():
-    return FastEmbed()
+    return JinaEmbeddings()
 
